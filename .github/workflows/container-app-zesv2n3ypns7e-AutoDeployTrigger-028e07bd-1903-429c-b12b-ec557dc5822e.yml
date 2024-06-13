@@ -1,0 +1,47 @@
+name: Trigger auto deployment for container-app-zesv2n3ypns7e
+
+# When this action will be executed
+on:
+  # Automatically trigger it when detected changes in repo
+  push:
+    branches: 
+      [ main ]
+    paths:
+    - 'server/**'
+    - '.github/workflows/container-app-zesv2n3ypns7e-AutoDeployTrigger-028e07bd-1903-429c-b12b-ec557dc5822e.yml'
+
+  # Allow manual trigger 
+  workflow_dispatch:      
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    permissions: 
+      id-token: write #This is required for requesting the OIDC JWT Token
+      contents: read #Required when GH token is used to authenticate with private repo
+
+    steps:
+      - name: Checkout to the branch
+        uses: actions/checkout@v2
+
+      - name: Azure Login
+        uses: azure/login@v1
+        with:
+          client-id: ${{ secrets.CONTAINERAPPZESV2N3YPNS7E_AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.CONTAINERAPPZESV2N3YPNS7E_AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.CONTAINERAPPZESV2N3YPNS7E_AZURE_SUBSCRIPTION_ID }}
+
+      - name: Build and push container image to registry
+        uses: azure/container-apps-deploy-action@v2
+        with:
+          appSourcePath: ${{ github.workspace }}/server 
+          registryUrl: 
+          registryUsername: ${{ secrets.CONTAINERAPPZESV2N3YPNS7E_REGISTRY_USERNAME }}
+          registryPassword: ${{ secrets.CONTAINERAPPZESV2N3YPNS7E_REGISTRY_PASSWORD }}
+          containerAppName: container-app-zesv2n3ypns7e
+          resourceGroup: appspacesragapp8333ace2
+          imageToBuild: default/container-app-zesv2n3ypns7e:${{ github.sha }}
+          _buildArgumentsKey_: |
+            _buildArgumentsValues_
+
+
